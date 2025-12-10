@@ -21,7 +21,8 @@ def intinputvalidate(prompt, lower, upper):
 
 players = intinputvalidate("How many players?\n", 2, 100)
 
-os.system('cls' if os.name == 'nt' else 'clear') # Wipe terminal
+def clearscreen():
+    os.system('cls' if os.name == 'nt' else 'clear') # Wipe terminal
 
 # Setup
 
@@ -42,14 +43,13 @@ lessdim = "\033[38;5;245m"
 dukecolour = "\033[35m"
 captaincolour = "\033[36m"
 assassincolour = "\033[1;90m"
-contessacolour = "\033[31m"
-ambassadorcolour = "\033[32m"
 red = "\033[31m"
+ambassadorcolour = "\033[32m"
 
 duke = f"{dukecolour}Duke{reset}"
 captain = f"{captaincolour}Captain{reset}"
 assassin = f"{assassincolour}Assassin{reset}"
-contessa = f"{contessacolour}Contessa{reset}"
+contessa = f"{red}Contessa{reset}"
 ambassador = f"{ambassadorcolour}Ambassador{reset}"
 
 # Subroutines
@@ -280,7 +280,7 @@ def coup(player):
 run = True
 while run:
     for i in range(players):
-        os.system('cls' if os.name == 'nt' else 'clear')  # Wipe terminal
+        clearscreen()
 
         if living[i]:
 
@@ -331,13 +331,10 @@ while run:
                     case _:
                         print("how did this happen")
 
-            sleep(2)
-
     else:
         print(f"Player {i+1} is dead.")
-        sleep(2)
 
-
+    sleep(2)
     temp = 0
     for j in range(living):
         if living[j]:
