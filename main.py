@@ -95,6 +95,19 @@ def displayoptions():
     print(f"10: {lessdim}Check own cards (get all other players to look away for 3 seconds){reset}")
     print()
 
+def findwin():
+    temp = 0
+    for j in range(len(living)):
+        if living[j]:
+            temp += 1
+
+    if temp <= 1:
+        for i in range(len(living)):
+            if living[i]:
+                print(f"Player {i + 1} wins!")
+                sleep(5)
+                quit()
+
 def coincheck():
     for i in range(players):
         print(f"Player {i+1}: {coins[i]} coins")
@@ -145,6 +158,7 @@ def die(player):
         print(f"Player {player+1} lost their final card and is now out.")
         cards[player] = []
         living[player] = False
+    findwin()
 
 
 def challenge(accuser, challenged, card):
@@ -225,7 +239,7 @@ def captainact(player):
         if block == 1:
             challengeconfirm = intinputvalidate(f"Player {player + 1}, would you like to challenge player {victim}'s {captain}? (1=yes, 0=no)\n", 0, 1)
             if challengeconfirm:
-                if challenge(player, victim-1, 2):
+                if challenge(player, victim-1, 1):
                     stealcoins(player, victim-1)
         elif block == 2:
             challengeconfirm = intinputvalidate(
@@ -242,12 +256,12 @@ def assassinact(player):
         if not victimchallengeconfirm:
             die(victim-1)
         else:
-            if not challenge(victim-1, player, 1):
+            if not challenge(victim-1, player, 2):
                 die(victim-1)
     else:
         challengeconfirm = intinputvalidate(f"Player {player + 1}, would you like to challenge player {victim}'s {contessa}? (1=yes, 0=no)\n", 0, 1)
         if challengeconfirm:
-            if challenge(player, victim - 1, 2):
+            if challenge(player, victim - 1, 3):
                 die(victim-1)
 
 def exchange(player):
@@ -294,7 +308,9 @@ def exchange(player):
         select1 = intinputvalidate("Pick a card to keep (1 - 4)\n", 1, 4)
         select2 = intinputvalidate("Pick a second card to keep (1 - 4)\n", 1, 4)
         cards[player][0] = exchangelist2.pop(select1 - 1)
-        cards[player][1] = exchangelist2.pop(select2 - 1)
+        cards[player][1] = exchangelist2.pop(select2 - 2)
+        deckreturn(exchangelist2[0])
+        deckreturn(exchangelist2[1])
 
 def ambassadoract(player):
     print(f"Player {player+1} is claiming to have an {ambassador} and is attempting to exchange their cards.")
@@ -377,17 +393,4 @@ while run:
 
         sleep(1)
 
-
-    temp = 0
-    for j in range(len(living)):
-        if living[j]:
-            temp += 1
-
-    if temp <= 1:
-        run = False
-
-
-for i in range(len(living)):
-    if living[i]:
-        print(f"Player {i+1} wins!")
-        sleep(5)
+    findwin()
