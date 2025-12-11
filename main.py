@@ -104,17 +104,23 @@ def selfcardcheck(player):
                 tempcardlist[i] = "?"
     print(f"{tempcardlist[0]}, {tempcardlist[1]}", end="\r")
     sleep(2)
+    print("=" * 50)
 
 def die(player):
     print(f"Player {player+1} is losing a card")
     seecards = intinputvalidate("Would you like to see your cards? (1=yes, 0=no)\n", 0, 1)
     if seecards:
         selfcardcheck(player)
-    losecard = intinputvalidate("Which card would you like to lose? (1 or 2)\n", 1, 2)
-    if losecard == 1:
-        cards[player] = [cards[player][1]]
-    elif losecard == 2:
-        cards[player] = [cards[player][0]]
+    if len(cards[player]) == 2:
+        losecard = intinputvalidate("Which card would you like to lose? (1 or 2)\n", 1, 2)
+        if losecard == 1:
+            cards[player] = [cards[player][1]]
+        elif losecard == 2:
+            cards[player] = [cards[player][0]]
+    else:
+        print(f"Player {player+1} lost their final card and is now out.")
+        cards[player] = []
+        living[player] = False
 
 
 def challenge(accuser, challenged, card):
@@ -249,6 +255,7 @@ def exchange(player):
     elif len(exchangelist) == 4:
         print(f"{exchangelist[0]}, {exchangelist[1]}, {exchangelist[2]}, {exchangelist[3]}", end="\r")
     sleep(3)
+    print("="*50)
 
     if len(cards[player]) == 1:
         select1 = intinputvalidate("Pick one card to keep (1 - 3)\n", 1, 3)
