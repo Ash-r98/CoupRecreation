@@ -1,4 +1,4 @@
-from random import randint
+import random as r
 import os
 from time import sleep
 
@@ -26,12 +26,36 @@ def clearscreen():
 
 # Setup
 
+# Deck
+
+deck = []
+totaldecknum = 15
+totaldecknum *= (players // 6) + 1
+
+for i in range(totaldecknum // 5):
+    deck.append(0)
+    deck.append(1)
+    deck.append(2)
+    deck.append(3)
+    deck.append(4)
+
+r.shuffle(deck)
+
+def deckdraw():
+    return deck.pop(0)
+
+def deckreturn(card):
+    deck.append(card)
+
+
+# General
+
 cards = []
 coins = []
 living = []
 
 for i in range(players):
-    cards.append([randint(0, 4), randint(0, 4)])
+    cards.append([deckdraw(), deckdraw()])
     coins.append(2)
     living.append(True)
 
@@ -95,7 +119,7 @@ def selfcardcheck(player):
             case 1:
                 tempcardlist[i] = captain
             case 2:
-                tempcardlist[i] = ambassador
+                tempcardlist[i] = assassin
             case 3:
                 tempcardlist[i] = contessa
             case 4:
@@ -108,10 +132,10 @@ def selfcardcheck(player):
 
 def die(player):
     print(f"Player {player+1} is losing a card")
-    seecards = intinputvalidate("Would you like to see your cards? (1=yes, 0=no)\n", 0, 1)
-    if seecards:
-        selfcardcheck(player)
     if len(cards[player]) == 2:
+        seecards = intinputvalidate("Would you like to see your cards? (1=yes, 0=no)\n", 0, 1)
+        if seecards:
+            selfcardcheck(player)
         losecard = intinputvalidate("Which card would you like to lose? (1 or 2)\n", 1, 2)
         if losecard == 1:
             cards[player] = [cards[player][1]]
@@ -124,14 +148,18 @@ def die(player):
 
 
 def challenge(accuser, challenged, card):
-    if card in cards[challenged]:
+    flag1 = False
+    for i in range(len(cards[challenged])):
+        if cards[challenged][i] == card:
+            flag1 = True
+    if flag1:
         print("Challenge failed.")
         die(accuser)
-        print(f"Player {challenged} must now replace their card.")
+        print(f"Player {challenged+1} must now replace their card.")
         flag = False
         for i in range(len(cards[challenged])):
             if cards[challenged][i] == card:
-                cards[challenged][i] = randint(0, 4)
+                cards[challenged][i] = deckdraw()
                 flag = True
             if flag:
                 continue
@@ -185,7 +213,7 @@ def stealcoins(theif, victim):
 
 def captainact(player):
     victim = intinputvalidate(f"Select a player to steal 2 coins from: (1 - {players})\n", 1, players)
-    block = intinputvalidate(f"Player {victim}, would you like to block with a {captain} or an {ambassador}? (1=Captain, 2=Ambassador, 0=No block)", 0, 2)
+    block = intinputvalidate(f"Player {victim}, would you like to block with a {captain} or an {ambassador}? (1=Captain, 2=Ambassador, 0=No block)\n", 0, 2)
     if block == 0:
         victimchallengeconfirm = intinputvalidate(f"Player {victim}, would you like to challenge player {player+1}'s {captain}? (1=yes, 0=no)\n", 0, 1)
         if not victimchallengeconfirm:
@@ -208,7 +236,7 @@ def captainact(player):
 
 def assassinact(player):
     victim = intinputvalidate(f"Select a player to assassinate: (1 - {players})\n", 1, players)
-    block = intinputvalidate(f"Player {victim}, would you like to block with a {contessa}? (1=yes, 0=no)",0, 1)
+    block = intinputvalidate(f"Player {victim}, would you like to block with a {contessa}? (1=yes, 0=no)\n",0, 1)
     if block == 0:
         victimchallengeconfirm = intinputvalidate(f"Player {victim}, would you like to challenge player {player + 1}'s {assassin}? (1=yes, 0=no)\n", 0, 1)
         if not victimchallengeconfirm:
@@ -231,10 +259,10 @@ def exchange(player):
     print("1", end="\r")
     sleep(1)
     if len(cards[player]) == 1:
-        exchangelist2 = [cards[player][0], randint(0, 4), randint(0, 4)]
+        exchangelist2 = [cards[player][0], deckdraw(), deckdraw()]
         exchangelist = [0, 0, 0]
     elif len(cards[player]) == 2:
-        exchangelist2 = [cards[player][0], cards[player][1], randint(0, 4), randint(0, 4)]
+        exchangelist2 = [cards[player][0], cards[player][1], deckdraw(), deckdraw()]
         exchangelist = [0, 0, 0, 0]
     for i in range(len(exchangelist)):
         match exchangelist2[i]:
@@ -243,7 +271,7 @@ def exchange(player):
             case 1:
                 exchangelist[i] = captain
             case 2:
-                exchangelist[i] = ambassador
+                exchangelist[i] = assassin
             case 3:
                 exchangelist[i] = contessa
             case 4:
@@ -259,12 +287,14 @@ def exchange(player):
 
     if len(cards[player]) == 1:
         select1 = intinputvalidate("Pick one card to keep (1 - 3)\n", 1, 3)
-        cards[player][0] = exchangelist2[select1-1]
+        cards[player][0] = exchangelist2.pop(select1-1)
+        deckreturn(exchangelist2[0])
+        deckreturn(exchangelist2[1])
     elif len(cards[player]) == 2:
         select1 = intinputvalidate("Pick a card to keep (1 - 4)\n", 1, 4)
         select2 = intinputvalidate("Pick a second card to keep (1 - 4)\n", 1, 4)
-        cards[player][0] = exchangelist2[select1 - 1]
-        cards[player][1] = exchangelist2[select2 - 1]
+        cards[player][0] = exchangelist2.pop(select1 - 1)
+        cards[player][1] = exchangelist2.pop(select2 - 1)
 
 def ambassadoract(player):
     print(f"Player {player+1} is claiming to have an {ambassador} and is attempting to exchange their cards.")
@@ -283,6 +313,10 @@ def coup(player):
 
 
 # Game Loop
+
+for i in range(players):
+    input(f"Player {i+1}, are you ready to see your starting cards?\n")
+    selfcardcheck(i)
 
 run = True
 while run:
@@ -338,19 +372,22 @@ while run:
                     case _:
                         print("how did this happen")
 
-    else:
-        print(f"Player {i+1} is dead.")
+        else:
+            print(f"Player {i+1} is dead.")
 
-    sleep(2)
+        sleep(1)
+
+
     temp = 0
-    for j in range(living):
+    for j in range(len(living)):
         if living[j]:
             temp += 1
 
-    if temp == 1:
+    if temp <= 1:
         run = False
 
-for i in range(living):
+
+for i in range(len(living)):
     if living[i]:
         print(f"Player {i+1} wins!")
         sleep(5)
