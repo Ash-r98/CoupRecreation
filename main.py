@@ -95,6 +95,21 @@ def displayoptions():
     print(f"10: {lessdim}Check own cards (get all other players to look away for 3 seconds){reset}")
     print()
 
+def visualcard(card):
+    match card:
+        case 0:
+            return duke
+        case 1:
+            return captain
+        case 2:
+            return assassin
+        case 3:
+            return contessa
+        case 4:
+            return ambassador
+        case _:
+            return "?"
+
 def findwin():
     temp = 0
     for j in range(len(living)):
@@ -116,14 +131,17 @@ def cardnumcheck():
     for i in range(players):
         print(f"Player {i+1}: {len(cards[i])} cards")
 
-def selfcardcheck(player):
-    print(f"{red}ALL PLAYERS EXCEPT PLAYER {player+1} LOOK AWAY{reset}")
+def carddisplaywarning(player):
+    print(f"{red}ALL PLAYERS EXCEPT PLAYER {player + 1} LOOK AWAY{reset}")
     print("3", end="\r")
     sleep(1)
     print("2", end="\r")
     sleep(1)
     print("1", end="\r")
     sleep(1)
+
+def selfcardcheck(player):
+    carddisplaywarning(player)
     tempcardlist = ['', '']
     for i in range(len(cards[player])):
         match cards[player][i]:
@@ -265,13 +283,7 @@ def assassinact(player):
                 die(victim-1)
 
 def exchange(player):
-    print(f"{red}ALL PLAYERS EXCEPT PLAYER {player + 1} LOOK AWAY{reset}")
-    print("3", end="\r")
-    sleep(1)
-    print("2", end="\r")
-    sleep(1)
-    print("1", end="\r")
-    sleep(1)
+    carddisplaywarning(player)
     if len(cards[player]) == 1:
         exchangelist2 = [cards[player][0], deckdraw(), deckdraw()]
         exchangelist = [0, 0, 0]
@@ -279,19 +291,7 @@ def exchange(player):
         exchangelist2 = [cards[player][0], cards[player][1], deckdraw(), deckdraw()]
         exchangelist = [0, 0, 0, 0]
     for i in range(len(exchangelist)):
-        match exchangelist2[i]:
-            case 0:
-                exchangelist[i] = duke
-            case 1:
-                exchangelist[i] = captain
-            case 2:
-                exchangelist[i] = assassin
-            case 3:
-                exchangelist[i] = contessa
-            case 4:
-                exchangelist[i] = ambassador
-            case _:
-                exchangelist[i] = "?"
+        exchangelist[i] = visualcard(exchangelist2[i])
     if len(exchangelist) == 3:
         print(f"{exchangelist[0]}, {exchangelist[1]}, {exchangelist[2]}", end="\r")
     elif len(exchangelist) == 4:
@@ -300,14 +300,35 @@ def exchange(player):
     print("="*50)
 
     if len(cards[player]) == 1:
-        select1 = intinputvalidate("Pick one card to keep (1 - 3)\n", 1, 3)
+        while True:
+            select1 = intinputvalidate("Pick one card to keep (1 - 3), 0 to replay cards\n", 0, 3)
+            if select1 == 0:
+                carddisplaywarning(player)
+                print(f"{exchangelist[0]}, {exchangelist[1]}, {exchangelist[2]}", end="\r")
+                sleep(3)
+            else:
+                break
         cards[player][0] = exchangelist2.pop(select1-1)
         deckreturn(exchangelist2[0])
         deckreturn(exchangelist2[1])
     elif len(cards[player]) == 2:
-        select1 = intinputvalidate("Pick a card to keep (1 - 4)\n", 1, 4)
-        select2 = intinputvalidate("Pick a second card to keep (1 - 4)\n", 1, 4)
+        while True:
+            select1 = intinputvalidate("Pick a card to keep (1 - 4), 0 to replay cards\n", 0, 4)
+            if select1 == 0:
+                carddisplaywarning(player)
+                print(f"{exchangelist[0]}, {exchangelist[1]}, {exchangelist[2]}, {exchangelist[3]}", end="\r")
+                sleep(3)
+            else:
+                break
         cards[player][0] = exchangelist2.pop(select1 - 1)
+        while True:
+            select2 = intinputvalidate("Pick a second card to keep (1 - 4), 0 to replay cards\n", 0, 4)
+            if select2 == 0:
+                carddisplaywarning(player)
+                print(f"{exchangelist[0]}, {exchangelist[1]}, {exchangelist[2]}, {exchangelist[3]}", end="\r")
+                sleep(3)
+            else:
+                break
         cards[player][1] = exchangelist2.pop(select2 - 2)
         deckreturn(exchangelist2[0])
         deckreturn(exchangelist2[1])
