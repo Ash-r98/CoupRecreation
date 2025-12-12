@@ -369,45 +369,49 @@ while run:
             sleep(1)
 
             while True:
-                cmd = intinputvalidate("Choose an action (numbers 1 - 10)\n", 1, 10)
-                match cmd:
-                    case 1:
-                        income(i)
-                        break
-                    case 2:
-                        foreignaid(i)
-                        break
-                    case 3:
-                        dukeact(i)
-                        break
-                    case 4:
-                        captainact(i)
-                        break
-                    case 5:
-                        if coins[i] >= 3:
-                            coins[i] -= 3
-                            assassinact(i)
+                if coins[i] >= 10:
+                    print(f"As you have {coins[i]} coins, you have to coup.")
+                    coup(i)
+                else:
+                    cmd = intinputvalidate("Choose an action (numbers 1 - 10)\n", 1, 10)
+                    match cmd:
+                        case 1:
+                            income(i)
                             break
-                        else:
-                            print("You need at least 3 coins to assassinate")
-                    case 6:
-                        ambassadoract(i)
-                        break
-                    case 7:
-                        if coins[i] >= 7:
-                            coins[i] -= 7
-                            coup(i)
+                        case 2:
+                            foreignaid(i)
                             break
-                        else:
-                            print("You need at least 7 coins to coup")
-                    case 8:
-                        coincheck()
-                    case 9:
-                        cardnumcheck()
-                    case 10:
-                        selfcardcheck(i)
-                    case _:
-                        print("how did this happen")
+                        case 3:
+                            dukeact(i)
+                            break
+                        case 4:
+                            captainact(i)
+                            break
+                        case 5:
+                            if coins[i] >= 3:
+                                coins[i] -= 3
+                                assassinact(i)
+                                break
+                            else:
+                                print("You need at least 3 coins to assassinate")
+                        case 6:
+                            ambassadoract(i)
+                            break
+                        case 7:
+                            if coins[i] >= 7:
+                                coins[i] -= 7
+                                coup(i)
+                                break
+                            else:
+                                print("You need at least 7 coins to coup")
+                        case 8:
+                            coincheck()
+                        case 9:
+                            cardnumcheck()
+                        case 10:
+                            selfcardcheck(i)
+                        case _:
+                            print("how did this happen")
 
         else:
             print(f"Player {i+1} is dead.")
@@ -415,3 +419,5 @@ while run:
         sleep(1)
 
     findwin()
+
+# Add testing skip initial display?
