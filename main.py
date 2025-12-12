@@ -53,12 +53,13 @@ def deckreturn(card):
 cards = []
 coins = []
 living = []
+droppedcards = []
 
 for i in range(players):
     cards.append([deckdraw(), deckdraw()])
     coins.append(2)
     living.append(True)
-
+    droppedcards.append([])
 
 # Variables
 reset = "\033[0m"
@@ -129,7 +130,12 @@ def coincheck():
 
 def cardnumcheck():
     for i in range(players):
-        print(f"Player {i+1}: {len(cards[i])} cards")
+        out = f"Player {i+1}: {len(cards[i])} cards"
+        if len(droppedcards[i]) != 0:
+            out += f", dropped {visualcard(droppedcards[i][0])}"
+            if len(droppedcards[i]) == 2:
+                out += f" and {visualcard(droppedcards[i][1])}"
+        print(out)
 
 def carddisplaywarning(player):
     print(f"{red}ALL PLAYERS EXCEPT PLAYER {player + 1} LOOK AWAY{reset}")
@@ -169,8 +175,10 @@ def die(player):
             selfcardcheck(player)
         losecard = intinputvalidate("Which card would you like to lose? (1 or 2)\n", 1, 2)
         if losecard == 1:
+            droppedcards[player].append(cards[player][0])
             cards[player] = [cards[player][1]]
         elif losecard == 2:
+            droppedcards[player].append(cards[player][1])
             cards[player] = [cards[player][0]]
     else:
         print(f"Player {player+1} lost their final card and is now out.")
