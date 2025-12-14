@@ -6,7 +6,7 @@ This game was initially developed in about 5 hours while I was very ill and edit
 
 - Inquisitor option
 - Teams option
-- Experimental custom rules
- - An option to block your team being switched for 1 coins
- - A balance adjustment to Inquisitors, removing their ability to block Captain
- - A new card: The Diplomat
+- Experimental custom rules:
+  - An option to block your team being switched for 1 coins
+  - A balance adjustment to Inquisitors, removing their ability to block Captain
+  - A new card: The Diplomat
