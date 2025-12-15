@@ -529,8 +529,18 @@ def inquisitorexchangeact(player):
 def inquisitorexamineact(player):
     pass
 
-def diplomatact(player):
-    pass
+def diplomatact():
+    livingplayers = 0
+    for i in range(len(living)):
+        if living[i]:
+            livingplayers += 1
+    if livingplayers > 2:
+        print("You will be able to select 2 players and switch their teams")
+        switchotherteam()
+        switchotherteam()
+    else:
+        print(f"As there are only {livingplayers} living players, you can only switch one player's team")
+        switchotherteam()
 
 def switchteam(player):
     if not teamblock[player]:
@@ -648,7 +658,8 @@ while run:
                         inquisitorexamineact(i)
                         break
                     elif optionslist[cmd] == "diplomat":
-                        diplomatact(i)
+                        diplomatact()
+                        break
                     elif optionslist[cmd] == "coup":
                         if coins[i] >= 7:
                             coins[i] -= 7
