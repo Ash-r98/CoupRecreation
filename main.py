@@ -105,12 +105,11 @@ for i in range(players):
     coins.append(2)
     living.append(True)
     droppedcards.append([])
-    if teamsoption:
-        if i % 2 == 0:
-            teams.append(True) # Reformist
-        else:
-            teams.append(False) # Loyalist
-        teamblock.append(False)
+    if i % 2 == 0:
+        teams.append(True) # Reformist
+    else:
+        teams.append(False) # Loyalist
+    teamblock.append(False)
 
 # Variables
 reset = "\033[0m"
@@ -230,15 +229,21 @@ def findwin():
 
 def coincheck():
     for i in range(players):
-        print(f"Player {i+1}: {coins[i]} coins")
+        if living[i]:
+            print(f"Player {i+1}: {coins[i]} coins")
+        else:
+            print(f"{dim}Player {i + 1}: {coins[i]} coins{reset}")
 
 def cardnumcheck():
     for i in range(players):
-        out = f"Player {i+1}: {len(cards[i])} cards"
+        if living[i]:
+            out = f"Player {i+1}: {len(cards[i])} cards"
+        else:
+            out = f"{dim}Player {i + 1}: {len(cards[i])} cards"
         if len(droppedcards[i]) != 0:
             out += f", dropped {visualcard(droppedcards[i][0])}"
             if len(droppedcards[i]) == 2:
-                out += f" and {visualcard(droppedcards[i][1])}"
+                out += f"{dim} and {visualcard(droppedcards[i][1])}"
         print(out)
 
 def carddisplaywarning(player):
@@ -284,13 +289,13 @@ def die(player):
             cards[player] = [cards[player][0]]
     else:
         print(f"Player {player+1} lost their final card and is now out.")
+        droppedcards[player].append(cards[player][0])
         cards[player] = []
         living[player] = False
     findwin()
 
 
 def challenge(accuser, challenged, card, invert):
-    if not invert:
     flag1 = False
     flag2 = True
     for i in range(len(cards[challenged])):
@@ -369,23 +374,22 @@ def captainact(player):
     victim = intinputvalidate(f"Select a player to steal 2 coins from: (1 - {players})\n", 1, players)
     block = intinputvalidate(f"Player {victim}, would you like to block with a {captain} or an {ambassador}? (1=Captain, 2=Ambassador, 0=No block)\n", 0, 2)
     if block == 0:
-        victimchallengeconfirm = intinputvalidate(f"Player {victim}, would you like to challenge player {player+1}'s {captain}? (1=yes, 0=no)\n", 0, 1)
-        if not victimchallengeconfirm:
+        challenger = intinputvalidate(f"Would anyone like to challenge that player {player + 1} has an {captain}? (input challenging player number, 0 if no challenge)\n",0, players)
+        if challenger == 0:
             stealcoins(player, victim-1)
         else:
-            if not challenge(victim-1, player, 1, False):
+            if not challenge(challenger-1, player, 1, False):
                 stealcoins(player, victim-1)
     else:
         if block == 1:
-            challengeconfirm = intinputvalidate(f"Player {player + 1}, would you like to challenge player {victim}'s {captain}? (1=yes, 0=no)\n", 0, 1)
-            if challengeconfirm:
-                if challenge(player, victim-1, 1, False):
+            challenger = intinputvalidate(f"Would anyone like to challenge that player {victim} has an {captain}? (input challenging player number, 0 if no challenge)\n",0, players)
+            if challenger != 0:
+                if challenge(player, challenger-1, 1, False):
                     stealcoins(player, victim-1)
         elif block == 2:
-            challengeconfirm = intinputvalidate(
-                f"Player {player + 1}, would you like to challenge player {victim}'s {ambassador}? (1=yes, 0=no)\n", 0, 1)
-            if challengeconfirm:
-                if challenge(player, victim - 1, 4, False):
+            challenger = intinputvalidate(f"Would anyone like to challenge that player {victim} has an {ambassador}? (input challenging player number, 0 if no challenge)\n",0, players)
+            if challenger != 0:
+                if challenge(player, challenger - 1, 4, False):
                     stealcoins(player, victim-1)
 
 def assassinact(player):
@@ -404,7 +408,7 @@ def assassinact(player):
             if challenge(challenger - 1, victim - 1, 3, False):
                 die(victim-1)
 
-def exchange(player, exchangeamount):
+def ambassadorexchange(player):
     carddisplaywarning(player)
     if len(cards[player]) == 1:
         exchangelist = [cards[player][0], deckdraw(), deckdraw()]
@@ -459,19 +463,68 @@ def ambassadoract(player):
     print(f"Player {player+1} is claiming to have an {ambassador} and is attempting to exchange their cards.")
     challenger = intinputvalidate(f"Would anyone like to challenge that player {player + 1} has an {ambassador}? (input challenging player number, 0 if no challenge)\n",0, players)
     if challenger == 0:
-        exchange(player, 2)
+        ambassadorexchange(player, 2)
     else:
         if not challenge(challenger-1, player, 4, False):
-            exchange(player, 2)
+            ambassadorexchange(player, 2)
+
+def inquisitorexchange(player):
+    carddisplaywarning(player)
+    if len(cards[player]) == 1:
+        exchangelist = [cards[player][0], deckdraw()]
+        exchangelistvisual = [0, 0]
+    elif len(cards[player]) == 2:
+        exchangelist = [cards[player][0], cards[player][1], deckdraw()]
+        exchangelistvisual = [0, 0, 0]
+    for i in range(len(exchangelistvisual)):
+        exchangelistvisual[i] = visualcard(exchangelist[i])
+    if len(exchangelistvisual) == 2:
+        print(f"{exchangelistvisual[0]}, {exchangelistvisual[1]}", end="\r")
+    elif len(exchangelistvisual) == 3:
+        print(f"{exchangelistvisual[0]}, {exchangelistvisual[1]}, {exchangelistvisual[2]}",end="\r")
+    sleep(3)
+    print("=" * 50)
+
+    if len(cards[player]) == 1:
+        while True:
+            select1 = intinputvalidate("Pick one card to keep (1 - 2), 0 to replay cards\n", 0, 2)
+            if select1 == 0:
+                carddisplaywarning(player)
+                print(f"{exchangelistvisual[0]}, {exchangelistvisual[1]}", end="\r")
+                sleep(3)
+            else:
+                break
+        cards[player][0] = exchangelist.pop(select1 - 1)
+        deckreturn(exchangelist[0])
+    elif len(cards[player]) == 2:
+        while True:
+            select1 = intinputvalidate("Pick a card to keep (1 - 3), 0 to replay cards\n", 0, 3)
+            if select1 == 0:
+                carddisplaywarning(player)
+                print(f"{exchangelistvisual[0]}, {exchangelistvisual[1]}, {exchangelistvisual[2]}",end="\r")
+                sleep(3)
+            else:
+                break
+        cards[player][0] = exchangelist.pop(select1 - 1)
+        while True:
+            select2 = intinputvalidate("Pick a second card to keep (1 - 3), 0 to replay cards\n", 0, 3)
+            if select2 == 0:
+                carddisplaywarning(player)
+                print(f"{exchangelistvisual[0]}, {exchangelistvisual[1]}, {exchangelistvisual[2]}",end="\r")
+                sleep(3)
+            else:
+                break
+        cards[player][1] = exchangelist.pop(select2 - 2)
+        deckreturn(exchangelist[0])
 
 def inquisitorexchangeact(player):
     print(f"Player {player + 1} is claiming to have an {inquisitor} and is attempting to exchange their cards.")
     challenger = intinputvalidate(f"Would anyone like to challenge that player {player + 1} has an {inquisitor}? (input challenging player number, 0 if no challenge)\n",0, players)
     if challenger == 0:
-        exchange(player, 1)
+        inquisitorexchange(player)
     else:
         if not challenge(challenger - 1, player, 5, False):
-            exchange(player, 1)
+            inquisitorexchange(player)
 
 def inquisitorexamineact(player):
     pass
@@ -628,8 +681,12 @@ while run:
                         else:
                             print("You need at least 1 coin to block your team from being switched")
                     elif optionslist[cmd] == "embezzle":
-                        if embezzle(i):
-                            treasury = 0
+                        if treasury > 0:
+                            if embezzle(i):
+                                treasury = 0
+                            break
+                        else:
+                            print("There must be at least 1 coin in the treasury to embezzle")
                     elif optionslist[cmd] == "checkcoins":
                         coincheck()
                     elif optionslist[cmd] == "checkcardnumbers":
