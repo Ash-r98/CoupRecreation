@@ -2,7 +2,7 @@ import random as r
 import os
 from time import sleep
 
-# Duke 0, Captain 1, Assassin 2, Contessa 3, Ambassador 4
+# Duke 0, Captain 1, Assassin 2, Contessa 3, Ambassador 4, Inquisitor 5, (experimental) Diplomat 6
 
 def intinputvalidate(prompt, lower, upper):
     while True:
@@ -20,6 +20,41 @@ def intinputvalidate(prompt, lower, upper):
 
 
 players = intinputvalidate("How many players?\n", 2, 100)
+inquisitoroption = intinputvalidate("Do you want to play with Inquisitors instead of Ambassadors? (1=yes, 0=no)\n", 0, 1)
+if inquisitoroption == 1:
+    inquisitoroption = True
+else:
+    inquisitoroption = False
+teamsoption = intinputvalidate("Do you want to play with teams? (1=yes, 0=no)\n", 0, 1)
+if teamsoption == 1:
+    teamsoption = True
+else:
+    teamsoption = False
+experimentaloption = intinputvalidate("Do you want to play with experimental options? (1=yes, 0=no)\n", 0, 1)
+if experimentaloption == 1:
+    experimentaloption = True
+else:
+    experimentaloption = False
+
+optionslist = ["income", "foreign aid", "duke", "captain", "assassin"] # Contessa not in list because not action
+if not inquisitoroption:
+    optionslist.append("ambassador")
+else:
+    optionslist.append("inquisitorexchange")
+    optionslist.append("inquisitorexamine")
+if teamsoption and experimentaloption:
+    optionslist.append("diplomat")
+optionslist.append("coup")
+if teamsoption:
+    optionslist.append("switchownteam")
+    optionslist.append("switchotherteam")
+    if experimentaloption:
+        optionslist.append("blockownteam")
+optionslist.append("checkcoins")
+optionslist.append("checkcardnumbers")
+optionslist.append("checkowncards")
+if teamsoption:
+    optionslist.append("checkteams")
 
 def clearscreen():
     os.system('cls' if os.name == 'nt' else 'clear') # Wipe terminal
@@ -37,7 +72,12 @@ for i in range(totaldecknum // 5):
     deck.append(1)
     deck.append(2)
     deck.append(3)
-    deck.append(4)
+    if not inquisitoroption:
+        deck.append(4)
+    else:
+        deck.append(5)
+    if experimentaloption:
+        deck.append(6)
 
 r.shuffle(deck)
 
@@ -54,12 +94,20 @@ cards = []
 coins = []
 living = []
 droppedcards = []
+teams = []
+teamblock = []
 
 for i in range(players):
     cards.append([deckdraw(), deckdraw()])
     coins.append(2)
     living.append(True)
     droppedcards.append([])
+    if teamsoption:
+        if i % 2 == 0:
+            teams.append(True) # Reformist
+        else:
+            teams.append(False) # Loyalist
+        teamblock.append(False)
 
 # Variables
 reset = "\033[0m"
@@ -70,30 +118,69 @@ captaincolour = "\033[36m"
 assassincolour = "\033[1;90m"
 red = "\033[31m"
 ambassadorcolour = "\033[32m"
+inquisitorcolour = "\033[33m"
+diplomatcolour = "\033[95m"
+reformistcolour = "\033[36m"
+
 
 duke = f"{dukecolour}Duke{reset}"
 captain = f"{captaincolour}Captain{reset}"
 assassin = f"{assassincolour}Assassin{reset}"
 contessa = f"{red}Contessa{reset}"
 ambassador = f"{ambassadorcolour}Ambassador{reset}"
+inquisitor = f"{inquisitorcolour}Inquisitor{reset}"
+diplomat = f"{diplomatcolour}Diplomat{reset}"
+reformist = f"{reformistcolour}Reformist{reset}"
+loyalist = f"{red}Loyalist{reset}"
 
 # Subroutines
 
 def displayoptions():
+    counter = 0
     print("Game actions (will end turn):")
-    print(f"1: Income: Take 1 coin {dim}(Cannot be blocked){reset}")
-    print(f"2: Foreign Aid: Take 2 coins {dim}(Can be blocked by Duke){reset}")
-    print(f"3: {duke}: Take 3 coins {dim}(Cannot be blocked){reset}")
-    print(f"4: {captain}: Steal 2 coins from another player {dim}(Can be blocked by Captain or Ambassador){reset}")
-    print(f"5: {assassin}: Pay 3 coins, pick a player to lose a card {dim}(Can be blocked by Contessa){reset}")
-    print(f"{contessa}: Blocks assassination {dim}(Cannot be blocked){reset}")
-    print(f"6: {ambassador}: Exchange cards with the deck {dim}(Cannot be blocked){reset}")
-    print(f"7: Coup: Pay 7 coins, pick a player to lose a card {dim}(Cannot be blocked, must coup if 10+ coins){reset}")
-    print()
-    print("Check actions (will not end turn):")
-    print(f"8: {lessdim}Check coin counts of all players{reset}")
-    print(f"9: {lessdim}Check card numbers of all players{reset}")
-    print(f"10: {lessdim}Check own cards (get all other players to look away for 3 seconds){reset}")
+
+    for i in range(len(optionslist)):
+        counter += 1
+
+        if optionslist[i] == "income":
+            print(f"{counter}: Income: Take 1 coin {dim}(Cannot be blocked){reset}")
+        elif optionslist[i] == "foreign aid":
+            print(f"{counter}: Foreign Aid: Take 2 coins {dim}(Can be blocked by Duke){reset}")
+        elif optionslist[i] == "duke":
+            print(f"{counter}: {duke}: Take 3 coins {dim}(Cannot be blocked){reset}")
+        elif optionslist[i] == "captain":
+            print(f"{counter}: {captain}: Steal 2 coins from another player {dim}(Can be blocked by Captain or Ambassador){reset}")
+        elif optionslist[i] == "assassin":
+            print(f"{counter}: {assassin}: Pay 3 coins, pick a player to lose a card {dim}(Can be blocked by Contessa){reset}")
+            print(f"{contessa}: Blocks assassination {dim}(Cannot be blocked){reset}") # Contessa not action so not in options list
+        elif optionslist[i] == "ambassador":
+            print(f"{counter}: {ambassador}: Exchange 2 cards with the deck {dim}(Cannot be blocked){reset}")
+        elif optionslist[i] == "inquisitorexchange":
+            print(f"{counter}: {inquisitor}: Exchange 1 card with the deck {dim}(Cannot be blocked){reset}")
+        elif optionslist[i] == "inquisitorexamine":
+            print(f"{counter}: {inquisitor}: Examine another player's card and can force them to switch it {dim}(Cannot be blocked){reset}")
+        elif optionslist[i] == "diplomat":
+            print(f"{counter}: {diplomat}: Pay 1 coin to switch 2 other players' team {dim}(Can be blocked by Diplomat){reset}")
+        elif optionslist[i] == "coup":
+            print(f"{counter}: Coup: Pay 7 coins, pick a player to lose a card {dim}(Cannot be blocked, must coup if 10+ coins){reset}")
+        elif optionslist[i] == "switchownteam":
+            print(f"{counter}: Switch own team: Pay one coin into the treasury to switch your own team")
+        elif optionslist[i] == "switchotherteam":
+            if not experimentaloption:
+                print(f"{counter}: Switch other player's team: Pay two coins into the treasury to switch another player's team")
+            else:
+                print(f"{counter}: Switch other player's team: Pay two coins into the treasury to switch another player's team {dim}(Can be blocked by Diplomat){reset}")
+        elif optionslist[i] == "blockownteam":
+            print(f"{counter}: Block own team: Prevent your team from being switched until your next turn")
+        elif optionslist[i] == "checkcoins":
+            print("\nCheck actions (will not end turn):")
+            print(f"{counter}: {lessdim}Check coin counts of all players{reset}")
+        elif optionslist[i] == "checkcardnumbers":
+            print(f"{counter}: {lessdim}Check card numbers of all players{reset}")
+        elif optionslist[i] == "checkowncards":
+            print(f"{counter}: {lessdim}Check own cards (get all other players to look away for 3 seconds){reset}")
+        elif optionslist[i] == "checkteams":
+            print(f"{counter}: {lessdim}Check the team of each player{reset}")
     print()
 
 def visualcard(card):
@@ -108,6 +195,10 @@ def visualcard(card):
             return contessa
         case 4:
             return ambassador
+        case 5:
+            return inquisitor
+        case 6:
+            return diplomat
         case _:
             return "?"
 
@@ -166,6 +257,13 @@ def selfcardcheck(player):
     print(f"{tempcardlist[0]}, {tempcardlist[1]}", end="\r")
     sleep(2)
     print("=" * 50)
+
+def teamscheck():
+    for i in range(players):
+        if teams[i]:
+            print(f"Player {i + 1}: {reformist}")
+        else:
+            print(f"Player {i + 1}: {loyalist}")
 
 def die(player):
     print(f"Player {player+1} is losing a card")
@@ -290,20 +388,20 @@ def assassinact(player):
             if challenge(player, victim - 1, 3):
                 die(victim-1)
 
-def exchange(player):
+def exchange(player, exchangeamount):
     carddisplaywarning(player)
     if len(cards[player]) == 1:
-        exchangelist2 = [cards[player][0], deckdraw(), deckdraw()]
-        exchangelist = [0, 0, 0]
+        exchangelist = [cards[player][0], deckdraw(), deckdraw()]
+        exchangelistvisual = [0, 0, 0]
     elif len(cards[player]) == 2:
-        exchangelist2 = [cards[player][0], cards[player][1], deckdraw(), deckdraw()]
-        exchangelist = [0, 0, 0, 0]
-    for i in range(len(exchangelist)):
-        exchangelist[i] = visualcard(exchangelist2[i])
-    if len(exchangelist) == 3:
-        print(f"{exchangelist[0]}, {exchangelist[1]}, {exchangelist[2]}", end="\r")
-    elif len(exchangelist) == 4:
-        print(f"{exchangelist[0]}, {exchangelist[1]}, {exchangelist[2]}, {exchangelist[3]}", end="\r")
+        exchangelist = [cards[player][0], cards[player][1], deckdraw(), deckdraw()]
+        exchangelistvisual = [0, 0, 0, 0]
+    for i in range(len(exchangelistvisual)):
+        exchangelistvisual[i] = visualcard(exchangelist[i])
+    if len(exchangelistvisual) == 3:
+        print(f"{exchangelistvisual[0]}, {exchangelistvisual[1]}, {exchangelistvisual[2]}", end="\r")
+    elif len(exchangelistvisual) == 4:
+        print(f"{exchangelistvisual[0]}, {exchangelistvisual[1]}, {exchangelistvisual[2]}, {exchangelistvisual[3]}", end="\r")
     sleep(3)
     print("="*50)
 
@@ -312,43 +410,80 @@ def exchange(player):
             select1 = intinputvalidate("Pick one card to keep (1 - 3), 0 to replay cards\n", 0, 3)
             if select1 == 0:
                 carddisplaywarning(player)
-                print(f"{exchangelist[0]}, {exchangelist[1]}, {exchangelist[2]}", end="\r")
+                print(f"{exchangelistvisual[0]}, {exchangelistvisual[1]}, {exchangelistvisual[2]}", end="\r")
                 sleep(3)
             else:
                 break
-        cards[player][0] = exchangelist2.pop(select1-1)
-        deckreturn(exchangelist2[0])
-        deckreturn(exchangelist2[1])
+        cards[player][0] = exchangelist.pop(select1-1)
+        deckreturn(exchangelist[0])
+        deckreturn(exchangelist[1])
     elif len(cards[player]) == 2:
         while True:
             select1 = intinputvalidate("Pick a card to keep (1 - 4), 0 to replay cards\n", 0, 4)
             if select1 == 0:
                 carddisplaywarning(player)
-                print(f"{exchangelist[0]}, {exchangelist[1]}, {exchangelist[2]}, {exchangelist[3]}", end="\r")
+                print(f"{exchangelistvisual[0]}, {exchangelistvisual[1]}, {exchangelistvisual[2]}, {exchangelistvisual[3]}", end="\r")
                 sleep(3)
             else:
                 break
-        cards[player][0] = exchangelist2.pop(select1 - 1)
+        cards[player][0] = exchangelist.pop(select1 - 1)
         while True:
             select2 = intinputvalidate("Pick a second card to keep (1 - 4), 0 to replay cards\n", 0, 4)
             if select2 == 0:
                 carddisplaywarning(player)
-                print(f"{exchangelist[0]}, {exchangelist[1]}, {exchangelist[2]}, {exchangelist[3]}", end="\r")
+                print(f"{exchangelistvisual[0]}, {exchangelistvisual[1]}, {exchangelistvisual[2]}, {exchangelistvisual[3]}", end="\r")
                 sleep(3)
             else:
                 break
-        cards[player][1] = exchangelist2.pop(select2 - 2)
-        deckreturn(exchangelist2[0])
-        deckreturn(exchangelist2[1])
+        cards[player][1] = exchangelist.pop(select2 - 2)
+        deckreturn(exchangelist[0])
+        deckreturn(exchangelist[1])
 
 def ambassadoract(player):
     print(f"Player {player+1} is claiming to have an {ambassador} and is attempting to exchange their cards.")
     challenger = intinputvalidate(f"Would anyone like to challenge that player {player + 1} has an {ambassador}? (input challenging player number, 0 if no challenge)\n",0, players)
     if challenger == 0:
-        exchange(player)
+        exchange(player, 2)
     else:
         if not challenge(challenger-1, player, 4):
-            exchange(player)
+            exchange(player, 2)
+
+def inquisitorexchangeact(player):
+    print(f"Player {player + 1} is claiming to have an {inquisitor} and is attempting to exchange their cards.")
+    challenger = intinputvalidate(f"Would anyone like to challenge that player {player + 1} has an {inquisitor}? (input challenging player number, 0 if no challenge)\n",0, players)
+    if challenger == 0:
+        exchange(player, 1)
+    else:
+        if not challenge(challenger - 1, player, 5):
+            exchange(player, 1)
+
+def inquisitorexamineact(player):
+    pass
+
+def diplomatact(player):
+    pass
+
+def switchteam(player):
+    if not teamblock[player]:
+        teams[player] = not teams[player] # Swaps the team of the player
+        if teams[player]:
+            print(f"Player {player + 1} is now a {reformist}")
+        else:
+            print(f"Player {player + 1} is now a {loyalist}")
+        return True
+    else:
+        print(f"Player {player + 1}'s team can't be switched until their next turn")
+        return False
+
+def switchotherteam():
+    flag = True
+    while flag:
+        victim = intinputvalidate(f"Select a player to switch their team: (1 - {players})\n", 1, players)
+        flag = not switchteam(victim-1)
+
+def blockteam(player):
+    teamblock[player] = True
+    print(f"Player {player + 1}'s team can't be switched until their next turn")
 
 def coup(player):
     victim = intinputvalidate(f"Select a player to coup: (1 - {players})\n", 1, players)
@@ -360,8 +495,9 @@ def coup(player):
 # Game Loop
 
 for i in range(players):
-    input(f"Player {i+1}, are you ready to see your starting cards?\n")
-    selfcardcheck(i)
+    introcmd = input(f"Player {i+1}, are you ready to see your starting cards?\n")
+    if introcmd != "skip" and introcmd != "`":
+        selfcardcheck(i)
 
 run = True
 while run:
@@ -371,55 +507,87 @@ while run:
         if living[i]:
 
             print(f"Player {i+1} turn\n")
-            sleep(1)
 
             displayoptions()
-            sleep(1)
+
+            if teamblock[i]:
+                teamblock[i] = False
+                print(f"Player {i + 1}'s team can now be switched again.")
+                print()
 
             while True:
                 if coins[i] >= 10:
                     print(f"As you have {coins[i]} coins, you have to coup.")
                     coup(i)
                 else:
-                    cmd = intinputvalidate("Choose an action (numbers 1 - 10)\n", 1, 10)
-                    match cmd:
-                        case 1:
-                            income(i)
+                    cmd = intinputvalidate(f"Choose an action (numbers 1 - {len(optionslist)})\n", 1, len(optionslist))
+                    cmd -= 1
+                    if optionslist[cmd] == "income":
+                        income(i)
+                        break
+                    elif optionslist[cmd] == "foreign aid":
+                        foreignaid(i)
+                        break
+                    elif optionslist[cmd] == "duke":
+                        dukeact(i)
+                        break
+                    elif optionslist[cmd] == "captain":
+                        captainact(i)
+                        break
+                    elif optionslist[cmd] == "assassin":
+                        if coins[i] >= 3:
+                            coins[i] -= 3
+                            assassinact(i)
                             break
-                        case 2:
-                            foreignaid(i)
+                        else:
+                            print("You need at least 3 coins to assassinate")
+                    elif optionslist[cmd] == "ambassador":
+                        ambassadoract(i)
+                        break
+                    elif optionslist[cmd] == "inquisitorexchange":
+                        inquisitorexchangeact(i)
+                        break
+                    elif optionslist[cmd] == "inquisitorexamine":
+                        inquisitorexamineact(i)
+                        break
+                    elif optionslist[cmd] == "diplomat":
+                        diplomatact(i)
+                    elif optionslist[cmd] == "coup":
+                        if coins[i] >= 7:
+                            coins[i] -= 7
+                            coup(i)
                             break
-                        case 3:
-                            dukeact(i)
+                        else:
+                            print("You need at least 7 coins to coup")
+                    elif optionslist[cmd] == "switchownteam":
+                        if coins[i] >= 1:
+                            coins[i] -= 1
+                            switchteam(i)
                             break
-                        case 4:
-                            captainact(i)
+                        else:
+                            print("You need at least 1 coin to switch your team")
+                    elif optionslist[cmd] == "switchotherteam":
+                        if coins[i] >= 2:
+                            coins[i] -= 2
+                            switchotherteam()
                             break
-                        case 5:
-                            if coins[i] >= 3:
-                                coins[i] -= 3
-                                assassinact(i)
-                                break
-                            else:
-                                print("You need at least 3 coins to assassinate")
-                        case 6:
-                            ambassadoract(i)
+                        else:
+                            print("You need at least 2 coins to switch another player's team")
+                    elif optionslist[cmd] == "blockownteam":
+                        if coins[i] >= 1:
+                            coins[i] -= 1
+                            blockteam(i)
                             break
-                        case 7:
-                            if coins[i] >= 7:
-                                coins[i] -= 7
-                                coup(i)
-                                break
-                            else:
-                                print("You need at least 7 coins to coup")
-                        case 8:
-                            coincheck()
-                        case 9:
-                            cardnumcheck()
-                        case 10:
-                            selfcardcheck(i)
-                        case _:
-                            print("how did this happen")
+                        else:
+                            print("You need at least 1 coin to block your team from being switched")
+                    elif optionslist[cmd] == "checkcoins":
+                        coincheck()
+                    elif optionslist[cmd] == "checkcardnumbers":
+                        cardnumcheck()
+                    elif optionslist[cmd] == "checkowncards":
+                        selfcardcheck(i)
+                    elif optionslist[cmd] == "checkteams":
+                        teamscheck()
 
         else:
             print(f"Player {i+1} is dead.")
@@ -427,5 +595,3 @@ while run:
         sleep(1)
 
     findwin()
-
-# Add testing skip initial display?
