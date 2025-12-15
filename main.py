@@ -594,7 +594,7 @@ def inquisitorexamineact(player):
         if not challenge(challenger-1, player, 5, False):
             examine(player, victim - 1)
 
-def diplomatact():
+def diplomatact(player):
     livingplayers = 0
     for i in range(len(living)):
         if living[i]:
@@ -602,7 +602,8 @@ def diplomatact():
     if livingplayers > 2:
         print("You will be able to select 2 players and switch their teams")
         switchotherteam()
-        switchotherteam()
+        if living[player]: # Only one switch will happen if player dies to a challenge before the second
+            switchotherteam()
     else:
         print(f"As there are only {livingplayers} living players, you can only switch one player's team")
         switchotherteam()
@@ -731,7 +732,7 @@ while run:
                         inquisitorexamineact(i)
                         break
                     elif optionslist[cmd] == "diplomat":
-                        diplomatact()
+                        diplomatact(i)
                         freeforall = updatefreeforall()
                         break
                     elif optionslist[cmd] == "coup":
