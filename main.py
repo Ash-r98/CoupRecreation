@@ -123,7 +123,7 @@ ambassadorcolour = "\033[32m"
 inquisitorcolour = "\033[33m"
 diplomatcolour = "\033[95m"
 reformistcolour = "\033[36m"
-
+loyalistcolour = red
 
 duke = f"{dukecolour}Duke{reset}"
 captain = f"{captaincolour}Captain{reset}"
@@ -133,7 +133,7 @@ ambassador = f"{ambassadorcolour}Ambassador{reset}"
 inquisitor = f"{inquisitorcolour}Inquisitor{reset}"
 diplomat = f"{diplomatcolour}Diplomat{reset}"
 reformist = f"{reformistcolour}Reformist{reset}"
-loyalist = f"{red}Loyalist{reset}"
+loyalist = f"{loyalistcolour}Loyalist{reset}"
 
 # Subroutines
 
@@ -613,7 +613,13 @@ while run:
 
         if living[i]:
 
-            print(f"Player {i+1} turn\n")
+            if not teamsoption:
+                print(f"Player {i+1} turn\n")
+            else:
+                if teams[i]:
+                    print(f"{reformistcolour}Player {i + 1} turn{reset}\n")
+                else:
+                    print(f"{loyalistcolour}Player {i + 1} turn{reset}\n")
 
             displayoptions()
 
