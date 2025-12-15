@@ -149,7 +149,13 @@ def displayoptions():
         elif optionslist[i] == "duke":
             print(f"{counter}: {duke}: Take 3 coins {dim}(Cannot be blocked){reset}")
         elif optionslist[i] == "captain":
-            print(f"{counter}: {captain}: Steal 2 coins from another player {dim}(Can be blocked by Captain or Ambassador){reset}")
+            if not inquisitoroption:
+                print(f"{counter}: {captain}: Steal 2 coins from another player {dim}(Can be blocked by Captain or Ambassador){reset}")
+            else:
+                if not experimentaloption:
+                    print(f"{counter}: {captain}: Steal 2 coins from another player {dim}(Can be blocked by Captain or Inquisitor){reset}")
+                else:
+                    print(f"{counter}: {captain}: Steal 2 coins from another player {dim}(Can be blocked by Captain){reset}")
         elif optionslist[i] == "assassin":
             print(f"{counter}: {assassin}: Pay 3 coins, pick a player to lose a card {dim}(Can be blocked by Contessa){reset}")
             print(f"{contessa}: Blocks assassination {dim}(Cannot be blocked){reset}") # Contessa not action so not in options list
@@ -376,16 +382,16 @@ def assassinact(player):
     victim = intinputvalidate(f"Select a player to assassinate: (1 - {players})\n", 1, players)
     block = intinputvalidate(f"Player {victim}, would you like to block with a {contessa}? (1=yes, 0=no)\n",0, 1)
     if block == 0:
-        victimchallengeconfirm = intinputvalidate(f"Player {victim}, would you like to challenge player {player + 1}'s {assassin}? (1=yes, 0=no)\n", 0, 1)
-        if not victimchallengeconfirm:
+        challenger = intinputvalidate(f"Would anyone like to challenge that player {player + 1} has an {assassin}? (input challenging player number, 0 if no challenge)\n",0, players)
+        if challenger == 0:
             die(victim-1)
         else:
-            if not challenge(victim-1, player, 2):
-                die(victim-1)
+            if not challenge(challenger-1, player, 2):
+                die(challenger-1)
     else:
-        challengeconfirm = intinputvalidate(f"Player {player + 1}, would you like to challenge player {victim}'s {contessa}? (1=yes, 0=no)\n", 0, 1)
-        if challengeconfirm:
-            if challenge(player, victim - 1, 3):
+        challenger = intinputvalidate(f"Would anyone like to challenge that player {victim} has a {contessa}? (input challenging player number, 0 if no challenge)\n",0, players)
+        if challenger != 0:
+            if challenge(challenger - 1, victim - 1, 3):
                 die(victim-1)
 
 def exchange(player, exchangeamount):
@@ -477,9 +483,22 @@ def switchteam(player):
 
 def switchotherteam():
     flag = True
+    blocked = False
     while flag:
         victim = intinputvalidate(f"Select a player to switch their team: (1 - {players})\n", 1, players)
-        flag = not switchteam(victim-1)
+        if experimentaloption:
+            block = intinputvalidate(f"Player {victim}, would you like to block with a {diplomat}? (1=yes, 0=no)\n", 0, 1)
+            if block:
+                challenger = intinputvalidate(f"Would anyone like to challenge that player {victim} has a {diplomat}? (input challenging player number, 0 if no challenge)\n",0, players)
+                if challenger != 0:
+                    if not challenge(challenger - 1, victim - 1, 6):
+                        blocked = True
+                        flag = False
+                else:
+                    blocked = True
+                    flag = False
+        if not blocked:
+            flag = not switchteam(victim-1)
 
 def blockteam(player):
     teamblock[player] = True
