@@ -66,8 +66,12 @@ def clearscreen():
 # Deck
 
 deck = []
-totaldecknum = 15
-totaldecknum *= (players // 6) + 1
+if experimentaloption:
+    cardtypes = 6
+else:
+    cardtypes = 5
+totaldecknum = cardtypes*3
+totaldecknum *= (players-1 // 6) + 1
 
 for i in range(totaldecknum // 5):
     deck.append(0)
