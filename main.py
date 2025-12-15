@@ -526,8 +526,47 @@ def inquisitorexchangeact(player):
         if not challenge(challenger - 1, player, 5, False):
             inquisitorexchange(player)
 
+def examine(player, victim):
+    print(f"Player {victim+1} must let player {player+1} see a card")
+    if len(cards[player]) == 2:
+        seecards = intinputvalidate(f"Player {victim+1}, would you like to see your cards? (1=yes, 0=no)\n", 0, 1)
+        if seecards:
+            selfcardcheck(victim)
+        givecardid = intinputvalidate(f"Which card would you like to give to player {player+1}? (1 or 2)\n", 1, 2)
+        givecardid -= 1
+    else:
+        print(f"Player {victim+1} only has one card and must let player {player+1} see it")
+        givecardid = 0
+    givecard = cards[victim][givecardid]
+    print(f"{red}ALL PLAYERS EXCEPT PLAYER {player+1} AND PLAYER {victim+1} LOOK AWAY")
+    print("3", end="\r")
+    sleep(1)
+    print("2", end="\r")
+    sleep(1)
+    print("1", end="\r")
+    sleep(1)
+    print(f"{visualcard(givecard)}", end="\r")
+    sleep(2)
+    print("=" * 50)
+
+    forceswitch = intinputvalidate(f"Player {player+1}, would you like to force player {victim+1} to switch their card? (1=yes, 0=no)\n", 0, 1)
+    if forceswitch == 1:
+        print(f"Player {victim+1} has to switch their card")
+        deckreturn(cards[victim][givecardid])
+        cards[victim][givecardid] = deckdraw()
+    else:
+        print(f"Player {victim + 1} has to keep their card")
+
+
 def inquisitorexamineact(player):
-    pass
+    print(f"Player {player + 1} is claiming to have an {inquisitor} and is attempting to examine another player's card.")
+    victim = intinputvalidate(f"Select a player to examine: (1 - {players})\n", 1, players)
+    challenger = intinputvalidate(f"Would anyone like to challenge that player {player + 1} has an {inquisitor}? (input challenging player number, 0 if no challenge)\n",0, players)
+    if challenger == 0:
+        examine(player, victim-1)
+    else:
+        if not challenge(challenger-1, player, 5, False):
+            examine(player, victim - 1)
 
 def diplomatact():
     livingplayers = 0
@@ -718,6 +757,6 @@ while run:
         else:
             print(f"Player {i+1} is dead.")
 
-        sleep(1)
+        sleep(2)
 
     findwin()
