@@ -392,7 +392,13 @@ def captainact(player):
         victim = intinputvalidate(f"Select a player to steal 2 coins from: (1 - {players})\n", 1, players)
     else:
         victim = teamsvictimcheck(f"Select a player to steal 2 coins from: (1 - {players})\n", player)
-    block = intinputvalidate(f"Player {victim}, would you like to block with a {captain} or an {ambassador}? (1=Captain, 2=Ambassador, 0=No block)\n", 0, 2)
+    if not inquisitoroption:
+        block = intinputvalidate(f"Player {victim}, would you like to block with a {captain} or an {ambassador}? (1=Captain, 2=Ambassador, 0=No block)\n", 0, 2)
+    else:
+        if not experimentaloption:
+            block = intinputvalidate(f"Player {victim}, would you like to block with a {captain} or an {inquisitor}? (1=Captain, 2=Inquisitor, 0=No block)\n",0, 2)
+        else:
+            block = intinputvalidate(f"Player {victim}, would you like to block with a {captain}? (1=yes, 0=no)\n",0, 1)
     if block == 0:
         challenger = intinputvalidate(f"Would anyone like to challenge that player {player + 1} has an {captain}? (input challenging player number, 0 if no challenge)\n",0, players)
         if challenger == 0:
@@ -407,10 +413,16 @@ def captainact(player):
                 if challenge(player, challenger-1, 1, False):
                     stealcoins(player, victim-1)
         elif block == 2:
-            challenger = intinputvalidate(f"Would anyone like to challenge that player {victim} has an {ambassador}? (input challenging player number, 0 if no challenge)\n",0, players)
-            if challenger != 0:
-                if challenge(player, challenger - 1, 4, False):
-                    stealcoins(player, victim-1)
+            if not inquisitoroption:
+                challenger = intinputvalidate(f"Would anyone like to challenge that player {victim} has an {ambassador}? (input challenging player number, 0 if no challenge)\n",0, players)
+                if challenger != 0:
+                    if challenge(player, challenger - 1, 4, False):
+                        stealcoins(player, victim - 1)
+            else:
+                challenger = intinputvalidate(f"Would anyone like to challenge that player {victim} has an {inquisitor}? (input challenging player number, 0 if no challenge)\n",0, players)
+                if challenger != 0:
+                    if challenge(player, challenger - 1, 5, False):
+                        stealcoins(player, victim - 1)
 
 def assassinact(player):
     if not teamsoption:
