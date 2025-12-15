@@ -99,6 +99,7 @@ droppedcards = []
 teams = []
 teamblock = []
 treasury = 0
+freeforall = False
 
 for i in range(players):
     cards.append([deckdraw(), deckdraw()])
@@ -274,6 +275,14 @@ def teamscheck():
 def treasurycheck():
     print(f"Treasury: {treasury} coins")
 
+def updatefreeforall():
+    flag = teams[0]
+    for i in range(1, len(teams)):
+        if teams[i] != flag:
+            return False
+    print("As everyone is on the same team, it is now a free for all")
+    return True
+
 def die(player):
     print(f"Player {player+1} is losing a card")
     if len(cards[player]) == 2:
@@ -328,6 +337,14 @@ def challenge(accuser, challenged, card, invert):
         die(challenged)
         return True
 
+def teamsvictimcheck(prompt, player):
+    while True:
+        victim = intinputvalidate(prompt, 1, players)
+        if teams[victim - 1] == teams[player] and not freeforall:
+            print(f"You cannot select player {victim} as they are on your team")
+        else:
+            return victim
+
 def income(player):
     coins[player] += 1
     print(f"Player {player+1} took 1 coin.")
@@ -371,7 +388,10 @@ def stealcoins(theif, victim):
         coins[theif] += 2
 
 def captainact(player):
-    victim = intinputvalidate(f"Select a player to steal 2 coins from: (1 - {players})\n", 1, players)
+    if not teamsoption:
+        victim = intinputvalidate(f"Select a player to steal 2 coins from: (1 - {players})\n", 1, players)
+    else:
+        victim = teamsvictimcheck(f"Select a player to steal 2 coins from: (1 - {players})\n", player)
     block = intinputvalidate(f"Player {victim}, would you like to block with a {captain} or an {ambassador}? (1=Captain, 2=Ambassador, 0=No block)\n", 0, 2)
     if block == 0:
         challenger = intinputvalidate(f"Would anyone like to challenge that player {player + 1} has an {captain}? (input challenging player number, 0 if no challenge)\n",0, players)
@@ -393,7 +413,10 @@ def captainact(player):
                     stealcoins(player, victim-1)
 
 def assassinact(player):
-    victim = intinputvalidate(f"Select a player to assassinate: (1 - {players})\n", 1, players)
+    if not teamsoption:
+        victim = intinputvalidate(f"Select a player to assassinate: (1 - {players})\n", 1, players)
+    else:
+        victim = teamsvictimcheck(f"Select a player to assassinate: (1 - {players})\n", player)
     block = intinputvalidate(f"Player {victim}, would you like to block with a {contessa}? (1=yes, 0=no)\n",0, 1)
     if block == 0:
         challenger = intinputvalidate(f"Would anyone like to challenge that player {player + 1} has an {assassin}? (input challenging player number, 0 if no challenge)\n",0, players)
@@ -560,7 +583,10 @@ def examine(player, victim):
 
 def inquisitorexamineact(player):
     print(f"Player {player + 1} is claiming to have an {inquisitor} and is attempting to examine another player's card.")
-    victim = intinputvalidate(f"Select a player to examine: (1 - {players})\n", 1, players)
+    if not teamsoption:
+        victim = intinputvalidate(f"Select a player to examine: (1 - {players})\n", 1, players)
+    else:
+        victim = teamsvictimcheck(f"Select a player to examine: (1 - {players})\n", player)
     challenger = intinputvalidate(f"Would anyone like to challenge that player {player + 1} has an {inquisitor}? (input challenging player number, 0 if no challenge)\n",0, players)
     if challenger == 0:
         examine(player, victim-1)
@@ -660,6 +686,8 @@ while run:
                 else:
                     print(f"{loyalistcolour}Player {i + 1} turn{reset}\n")
 
+                freeforall = updatefreeforall()
+
             displayoptions()
 
             if teamblock[i]:
@@ -704,6 +732,7 @@ while run:
                         break
                     elif optionslist[cmd] == "diplomat":
                         diplomatact()
+                        freeforall = updatefreeforall()
                         break
                     elif optionslist[cmd] == "coup":
                         if coins[i] >= 7:
@@ -717,6 +746,7 @@ while run:
                             coins[i] -= 1
                             treasury += 1
                             switchteam(i)
+                            freeforall = updatefreeforall()
                             break
                         else:
                             print("You need at least 1 coin to switch your team")
@@ -725,6 +755,7 @@ while run:
                             coins[i] -= 2
                             treasury += 2
                             switchotherteam()
+                            freeforall = updatefreeforall()
                             break
                         else:
                             print("You need at least 2 coins to switch another player's team")
