@@ -15,7 +15,7 @@ def intinputvalidate(prompt, lower, upper):
                     return temp
             else:
                 return temp
-        except:
+        except Exception:
             print("Invalid input")
 
 
