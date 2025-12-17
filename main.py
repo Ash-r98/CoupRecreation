@@ -66,7 +66,7 @@ def clearscreen():
 # Deck
 
 deck = []
-if experimentaloption:
+if teamsoption and experimentaloption:
     cardtypes = 6
 else:
     cardtypes = 5
@@ -82,7 +82,7 @@ for i in range(totaldecknum // 5):
         deck.append(4)
     else:
         deck.append(5)
-    if experimentaloption:
+    if teamsoption and experimentaloption:
         deck.append(6)
 
 r.shuffle(deck)
