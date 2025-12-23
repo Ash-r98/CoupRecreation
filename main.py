@@ -18,6 +18,8 @@ def intinputvalidate(prompt, lower, upper):
         except Exception:
             print("Invalid input")
 
+def clearscreen():
+    os.system('cls' if os.name == 'nt' else 'clear') # Wipe terminal
 
 players = intinputvalidate("How many players?\n", 2, 100)
 inquisitoroption = intinputvalidate("Do you want to play with Inquisitors instead of Ambassadors? (1=yes, 0=no)\n", 0, 1)
@@ -57,9 +59,6 @@ optionslist.append("checkowncards")
 if teamsoption:
     optionslist.append("checkteams")
     optionslist.append("checktreasury")
-
-def clearscreen():
-    os.system('cls' if os.name == 'nt' else 'clear') # Wipe terminal
 
 # Setup
 
